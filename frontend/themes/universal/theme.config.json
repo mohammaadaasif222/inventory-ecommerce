@@ -1,0 +1,87 @@
+{
+  "name": "Universal",
+  "slug": "universal",
+  "version": "1.0.0",
+  "description": "Clean, high-conversion and category-agnostic. Built to sell anything — apparel, electronics, grocery, wellness — and to be re-branded per merchant from the customiser without new theme code.",
+  "author": "platform",
+  "extends": "base",
+  "layoutPreset": "classic",
+  "tokens": {
+    "colors": {
+      "light": {
+        "background": "0 0% 100%",
+        "foreground": "222 47% 11%",
+        "card": "0 0% 100%",
+        "card-foreground": "222 47% 11%",
+        "popover": "0 0% 100%",
+        "popover-foreground": "222 47% 11%",
+        "primary": "222 47% 20%",
+        "primary-foreground": "210 40% 98%",
+        "secondary": "210 40% 96%",
+        "secondary-foreground": "222 47% 20%",
+        "muted": "210 40% 96%",
+        "muted-foreground": "215 16% 47%",
+        "accent": "210 40% 94%",
+        "accent-foreground": "222 47% 20%",
+        "destructive": "0 72% 47%",
+        "destructive-foreground": "210 40% 98%",
+        "border": "214 32% 91%",
+        "input": "214 32% 91%",
+        "ring": "221 83% 53%",
+        "brand": "221 83% 53%",
+        "brand-foreground": "210 40% 98%",
+        "ink": "222 47% 11%"
+      },
+      "dark": {
+        "background": "222 47% 7%",
+        "foreground": "210 40% 96%",
+        "card": "222 44% 10%",
+        "card-foreground": "210 40% 96%",
+        "popover": "222 44% 10%",
+        "popover-foreground": "210 40% 96%",
+        "primary": "210 40% 96%",
+        "primary-foreground": "222 47% 11%",
+        "secondary": "217 33% 17%",
+        "secondary-foreground": "210 40% 96%",
+        "muted": "217 33% 17%",
+        "muted-foreground": "215 20% 65%",
+        "accent": "217 33% 20%",
+        "accent-foreground": "210 40% 96%",
+        "destructive": "0 63% 41%",
+        "destructive-foreground": "210 40% 96%",
+        "border": "217 33% 20%",
+        "input": "217 33% 20%",
+        "ring": "217 91% 60%",
+        "brand": "217 91% 60%",
+        "brand-foreground": "222 47% 11%",
+        "ink": "222 47% 4%"
+      }
+    },
+    "fonts": { "display": "jost", "body": "sans" },
+    "radius": "0.5rem"
+  },
+  "checkout": {
+    "steps": [["address"], ["shipping"], ["payment"]],
+    "style": "stepper",
+    "trustBadges": [
+      "Secure payment",
+      "Free returns within 7 days",
+      "Genuine products only"
+    ],
+    "upsell": false
+  },
+  "preview": {
+    "swatch": {
+      "bg": "hsl(0 0% 100%)",
+      "fg": "hsl(222 47% 11%)",
+      "brand": "hsl(221 83% 53%)",
+      "muted": "hsl(210 40% 96%)"
+    },
+    "swatchDark": {
+      "bg": "hsl(222 47% 7%)",
+      "fg": "hsl(210 40% 96%)",
+      "brand": "hsl(217 91% 60%)",
+      "muted": "hsl(217 33% 17%)"
+    }
+  }
+}

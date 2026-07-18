@@ -1,0 +1,77 @@
+{
+  "name": "Maison",
+  "slug": "maison",
+  "version": "1.0.0",
+  "description": "Warm ivory and espresso with a muted gold accent. Editorial serif, soft corners.",
+  "author": "platform",
+  "extends": "base",
+  "layoutPreset": "classic",
+  "tokens": {
+    "colors": {
+      "light": {
+        "background": "36 44% 98%",
+        "foreground": "25 26% 12%",
+        "card": "0 0% 100%",
+        "card-foreground": "25 26% 12%",
+        "popover": "0 0% 100%",
+        "popover-foreground": "25 26% 12%",
+        "primary": "24 30% 16%",
+        "primary-foreground": "36 44% 98%",
+        "secondary": "33 30% 94%",
+        "secondary-foreground": "24 30% 16%",
+        "muted": "33 28% 94%",
+        "muted-foreground": "25 12% 45%",
+        "accent": "36 42% 90%",
+        "accent-foreground": "24 30% 16%",
+        "destructive": "4 66% 46%",
+        "destructive-foreground": "36 44% 98%",
+        "border": "33 22% 88%",
+        "input": "33 22% 88%",
+        "ring": "34 44% 42%",
+        "brand": "36 46% 52%",
+        "brand-foreground": "24 30% 16%",
+        "ink": "24 30% 12%"
+      },
+      "dark": {
+        "background": "24 20% 8%",
+        "foreground": "36 30% 94%",
+        "card": "24 18% 11%",
+        "card-foreground": "36 30% 94%",
+        "popover": "24 18% 11%",
+        "popover-foreground": "36 30% 94%",
+        "primary": "36 40% 92%",
+        "primary-foreground": "24 30% 12%",
+        "secondary": "24 14% 17%",
+        "secondary-foreground": "36 30% 94%",
+        "muted": "24 14% 17%",
+        "muted-foreground": "33 12% 62%",
+        "accent": "24 16% 20%",
+        "accent-foreground": "36 30% 94%",
+        "destructive": "4 66% 46%",
+        "destructive-foreground": "36 44% 98%",
+        "border": "24 12% 20%",
+        "input": "24 12% 20%",
+        "ring": "36 46% 52%",
+        "brand": "36 52% 58%",
+        "brand-foreground": "24 30% 12%",
+        "ink": "24 24% 6%"
+      }
+    },
+    "fonts": { "display": "cormorant", "body": "sans" },
+    "radius": "0.25rem"
+  },
+  "preview": {
+    "swatch": {
+      "bg": "hsl(36 44% 98%)",
+      "fg": "hsl(25 26% 12%)",
+      "brand": "hsl(36 46% 52%)",
+      "muted": "hsl(33 28% 94%)"
+    },
+    "swatchDark": {
+      "bg": "hsl(24 20% 8%)",
+      "fg": "hsl(36 30% 94%)",
+      "brand": "hsl(36 52% 58%)",
+      "muted": "hsl(24 14% 17%)"
+    }
+  }
+}

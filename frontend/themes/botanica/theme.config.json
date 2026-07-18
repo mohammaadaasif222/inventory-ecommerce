@@ -1,0 +1,77 @@
+{
+  "name": "Botanica",
+  "slug": "botanica",
+  "version": "1.0.0",
+  "description": "Sage and herbal green on soft paper. Rounded corners, a warmer apothecary serif.",
+  "author": "platform",
+  "extends": "base",
+  "layoutPreset": "classic",
+  "tokens": {
+    "colors": {
+      "light": {
+        "background": "80 30% 98%",
+        "foreground": "150 22% 12%",
+        "card": "0 0% 100%",
+        "card-foreground": "150 22% 12%",
+        "popover": "0 0% 100%",
+        "popover-foreground": "150 22% 12%",
+        "primary": "152 30% 20%",
+        "primary-foreground": "80 30% 98%",
+        "secondary": "100 22% 94%",
+        "secondary-foreground": "152 30% 20%",
+        "muted": "100 20% 94%",
+        "muted-foreground": "150 10% 42%",
+        "accent": "100 26% 90%",
+        "accent-foreground": "152 30% 20%",
+        "destructive": "8 62% 46%",
+        "destructive-foreground": "80 30% 98%",
+        "border": "100 16% 87%",
+        "input": "100 16% 87%",
+        "ring": "152 34% 34%",
+        "brand": "148 38% 38%",
+        "brand-foreground": "80 30% 98%",
+        "ink": "152 32% 10%"
+      },
+      "dark": {
+        "background": "155 22% 7%",
+        "foreground": "90 22% 94%",
+        "card": "155 20% 10%",
+        "card-foreground": "90 22% 94%",
+        "popover": "155 20% 10%",
+        "popover-foreground": "90 22% 94%",
+        "primary": "90 22% 94%",
+        "primary-foreground": "155 22% 7%",
+        "secondary": "155 14% 16%",
+        "secondary-foreground": "90 22% 94%",
+        "muted": "155 14% 16%",
+        "muted-foreground": "100 10% 62%",
+        "accent": "155 16% 19%",
+        "accent-foreground": "90 22% 94%",
+        "destructive": "8 62% 46%",
+        "destructive-foreground": "80 30% 98%",
+        "border": "155 12% 19%",
+        "input": "155 12% 19%",
+        "ring": "148 44% 52%",
+        "brand": "145 44% 52%",
+        "brand-foreground": "155 22% 7%",
+        "ink": "155 26% 5%"
+      }
+    },
+    "fonts": { "display": "fraunces", "body": "sans" },
+    "radius": "0.75rem"
+  },
+  "preview": {
+    "swatch": {
+      "bg": "hsl(80 30% 98%)",
+      "fg": "hsl(150 22% 12%)",
+      "brand": "hsl(148 38% 38%)",
+      "muted": "hsl(100 20% 94%)"
+    },
+    "swatchDark": {
+      "bg": "hsl(155 22% 7%)",
+      "fg": "hsl(90 22% 94%)",
+      "brand": "hsl(145 44% 52%)",
+      "muted": "hsl(155 14% 16%)"
+    }
+  }
+}

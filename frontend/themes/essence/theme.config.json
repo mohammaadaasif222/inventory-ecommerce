@@ -1,0 +1,91 @@
+{
+  "name": "Essence",
+  "slug": "essence",
+  "version": "1.0.0",
+  "description": "A fragrance house, not a shop. Deep aubergine and antique gold on warm ivory, editorial pacing, scent-note storytelling and a single-column checkout with a sample-vial upsell.",
+  "author": "platform",
+  "extends": "base",
+  "layoutPreset": "editorial",
+  "layout": {
+    "footer": "columns",
+    "sectionPadding": "py-20"
+  },
+  "tokens": {
+    "colors": {
+      "light": {
+        "background": "34 38% 97%",
+        "foreground": "300 18% 14%",
+        "card": "36 40% 99%",
+        "card-foreground": "300 18% 14%",
+        "popover": "36 40% 99%",
+        "popover-foreground": "300 18% 14%",
+        "primary": "300 22% 18%",
+        "primary-foreground": "34 38% 97%",
+        "secondary": "32 26% 93%",
+        "secondary-foreground": "300 22% 18%",
+        "muted": "32 24% 93%",
+        "muted-foreground": "300 8% 44%",
+        "accent": "34 34% 89%",
+        "accent-foreground": "300 22% 18%",
+        "destructive": "4 62% 44%",
+        "destructive-foreground": "34 38% 97%",
+        "border": "32 20% 87%",
+        "input": "32 20% 87%",
+        "ring": "38 48% 46%",
+        "brand": "38 52% 48%",
+        "brand-foreground": "300 22% 14%",
+        "ink": "300 24% 10%"
+      },
+      "dark": {
+        "background": "300 20% 7%",
+        "foreground": "34 28% 93%",
+        "card": "300 18% 10%",
+        "card-foreground": "34 28% 93%",
+        "popover": "300 18% 10%",
+        "popover-foreground": "34 28% 93%",
+        "primary": "34 34% 92%",
+        "primary-foreground": "300 24% 10%",
+        "secondary": "300 12% 16%",
+        "secondary-foreground": "34 28% 93%",
+        "muted": "300 12% 16%",
+        "muted-foreground": "32 10% 60%",
+        "accent": "300 14% 19%",
+        "accent-foreground": "34 28% 93%",
+        "destructive": "4 62% 44%",
+        "destructive-foreground": "34 38% 97%",
+        "border": "300 10% 19%",
+        "input": "300 10% 19%",
+        "ring": "38 54% 56%",
+        "brand": "38 58% 58%",
+        "brand-foreground": "300 24% 10%",
+        "ink": "300 26% 5%"
+      }
+    },
+    "fonts": { "display": "cormorant", "body": "sans" },
+    "radius": "0.125rem"
+  },
+  "checkout": {
+    "steps": [["address", "shipping", "payment"]],
+    "style": "single-column",
+    "trustBadges": [
+      "Authenticity guaranteed — sourced direct from the house",
+      "Packed for transit in protective, sealed cases",
+      "Discreet delivery, no branding on the outer box"
+    ],
+    "upsell": true
+  },
+  "preview": {
+    "swatch": {
+      "bg": "hsl(34 38% 97%)",
+      "fg": "hsl(300 18% 14%)",
+      "brand": "hsl(38 52% 48%)",
+      "muted": "hsl(32 24% 93%)"
+    },
+    "swatchDark": {
+      "bg": "hsl(300 20% 7%)",
+      "fg": "hsl(34 28% 93%)",
+      "brand": "hsl(38 58% 58%)",
+      "muted": "hsl(300 12% 16%)"
+    }
+  }
+}

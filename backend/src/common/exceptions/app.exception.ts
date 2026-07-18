@@ -1,0 +1,63 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
+
+/**
+ * Domain exception carrying a stable machine-readable error code
+ * (e.g. PRODUCT_NOT_FOUND, STOCK_INSUFFICIENT) alongside the HTTP status.
+ * The global filter serialises `code` into the error envelope.
+ */
+export class AppException extends HttpException {
+  constructor(
+    public readonly code: string,
+    message: string,
+    status: HttpStatus = HttpStatus.BAD_REQUEST,
+    public readonly details?: unknown,
+  ) {
+    super({ code, message, details }, status);
+  }
+}
+
+/** Common, reusable domain error codes. Modules may add their own. */
+export const ErrorCode = {
+  // generic
+  VALIDATION_FAILED: 'VALIDATION_FAILED',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FORBIDDEN: 'FORBIDDEN',
+  NOT_FOUND: 'NOT_FOUND',
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  // auth
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  EMAIL_ALREADY_EXISTS: 'EMAIL_ALREADY_EXISTS',
+  INVALID_OTP: 'INVALID_OTP',
+  INVALID_REFRESH_TOKEN: 'INVALID_REFRESH_TOKEN',
+  // users
+  USER_NOT_FOUND: 'USER_NOT_FOUND',
+  USER_BANNED: 'USER_BANNED',
+  // upload / storage
+  STORAGE_PROVIDER_NOT_CONFIGURED: 'STORAGE_PROVIDER_NOT_CONFIGURED',
+  STORAGE_CONNECTION_FAILED: 'STORAGE_CONNECTION_FAILED',
+  UPLOAD_FAILED: 'UPLOAD_FAILED',
+  UNSUPPORTED_FILE_TYPE: 'UNSUPPORTED_FILE_TYPE',
+  FILE_TOO_LARGE: 'FILE_TOO_LARGE',
+  PRESIGNED_NOT_SUPPORTED: 'PRESIGNED_NOT_SUPPORTED',
+  // config
+  CONFIG_KEY_NOT_FOUND: 'CONFIG_KEY_NOT_FOUND',
+  // commerce
+  PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
+  STOCK_INSUFFICIENT: 'STOCK_INSUFFICIENT',
+  ORDER_NOT_FOUND: 'ORDER_NOT_FOUND',
+  INVALID_STATUS_TRANSITION: 'INVALID_STATUS_TRANSITION',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  REFUND_FAILED: 'REFUND_FAILED',
+  // reviews
+  REVIEW_NOT_FOUND: 'REVIEW_NOT_FOUND',
+  REVIEW_ALREADY_EXISTS: 'REVIEW_ALREADY_EXISTS',
+  // coupons
+  COUPON_NOT_FOUND: 'COUPON_NOT_FOUND',
+  COUPON_ALREADY_EXISTS: 'COUPON_ALREADY_EXISTS',
+  COUPON_INVALID: 'COUPON_INVALID',
+  COUPON_EXPIRED: 'COUPON_EXPIRED',
+  COUPON_NOT_STARTED: 'COUPON_NOT_STARTED',
+  COUPON_EXHAUSTED: 'COUPON_EXHAUSTED',
+  COUPON_MIN_SPEND_NOT_MET: 'COUPON_MIN_SPEND_NOT_MET',
+  COUPON_USER_LIMIT_REACHED: 'COUPON_USER_LIMIT_REACHED',
+} as const;

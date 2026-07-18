@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+/**
+ * ── Theme engine: palette selection ──────────────────────────────────────
+ *
+ * `ThemeRuntime` writes the active theme's *two* palettes onto `.theme-root`
+ * as inline `--light-*` / `--dark-*` variables. These rules pick one and bind
+ * it to the shadcn token contract that every component — including checkout —
+ * already reads.
+ *
+ * Why the indirection rather than writing `--background` inline directly:
+ * inline styles outrank every stylesheet rule, so an inline `--background`
+ * could never be overridden by a `.dark` selector without `!important`.
+ * Shipping raw palettes inline and choosing between them here keeps ordinary
+ * specificity working — `.dark .theme-root` (0,2,0) simply beats `.theme-root`
+ * (0,1,0) — and makes a visitor's light/dark toggle a class flip on <html>
+ * with no re-render and no server round trip.
+ *
+ * Deliberately OUTSIDE `@layer base`, and below it, for two reasons that
+ * predate this engine and still hold:
+ *
+ *  1. Tailwind tree-shakes custom CSS inside `@layer` against the content
+ *     files. Unlayered CSS is always emitted, which is what a theme's
+ *     runtime-computed palette needs.
+ *  2. `.theme-root` and `:root` have equal specificity (0,1,0), so whichever
+ *     comes last wins. This must come last, or the neutral admin palette above
+ *     would win over the shop's theme.
+ *
+ * Adding a token means adding it here in both blocks, to `ColorTokens` and to
+ * `COLOR_TOKEN_NAMES` in `themes/config.ts` — and, if components should reach
+ * it as a class, to `tailwind.config.ts`.
+ */
+
+.theme-root {
+  --background: var(--light-background);
+  --foreground: var(--light-foreground);
+  --card: var(--light-card);
+  --card-foreground: var(--light-card-foreground);
+  --popover: var(--light-popover);
+  --popover-foreground: var(--light-popover-foreground);
+  --primary: var(--light-primary);
+  --primary-foreground: var(--light-primary-foreground);
+  --secondary: var(--light-secondary);
+  --secondary-foreground: var(--light-secondary-foreground);
+  --muted: var(--light-muted);
+  --muted-foreground: var(--light-muted-foreground);
+  --accent: var(--light-accent);
+  --accent-foreground: var(--light-accent-foreground);
+  --destructive: var(--light-destructive);
+  --destructive-foreground: var(--light-destructive-foreground);
+  --border: var(--light-border);
+  --input: var(--light-input);
+  --ring: var(--light-ring);
+  --brand: var(--light-brand);
+  --brand-foreground: var(--light-brand-foreground);
+  --ink: var(--light-ink);
+}
+
+/* next-themes puts `.dark` on <html>, above the element carrying .theme-root. */
+.dark .theme-root {
+  --background: var(--dark-background);
+  --foreground: var(--dark-foreground);
+  --card: var(--dark-card);
+  --card-foreground: var(--dark-card-foreground);
+  --popover: var(--dark-popover);
+  --popover-foreground: var(--dark-popover-foreground);
+  --primary: var(--dark-primary);
+  --primary-foreground: var(--dark-primary-foreground);
+  --secondary: var(--dark-secondary);
+  --secondary-foreground: var(--dark-secondary-foreground);
+  --muted: var(--dark-muted);
+  --muted-foreground: var(--dark-muted-foreground);
+  --accent: var(--dark-accent);
+  --accent-foreground: var(--dark-accent-foreground);
+  --destructive: var(--dark-destructive);
+  --destructive-foreground: var(--dark-destructive-foreground);
+  --border: var(--dark-border);
+  --input: var(--dark-input);
+  --ring: var(--dark-ring);
+  --brand: var(--dark-brand);
+  --brand-foreground: var(--dark-brand-foreground);
+  --ink: var(--dark-ink);
+}

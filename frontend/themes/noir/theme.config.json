@@ -1,0 +1,77 @@
+{
+  "name": "Noir",
+  "slug": "noir",
+  "version": "1.0.0",
+  "description": "Monochrome and high contrast with square corners. Geometric sans — gallery minimalism.",
+  "author": "platform",
+  "extends": "base",
+  "layoutPreset": "classic",
+  "tokens": {
+    "colors": {
+      "light": {
+        "background": "0 0% 99%",
+        "foreground": "0 0% 7%",
+        "card": "0 0% 100%",
+        "card-foreground": "0 0% 7%",
+        "popover": "0 0% 100%",
+        "popover-foreground": "0 0% 7%",
+        "primary": "0 0% 7%",
+        "primary-foreground": "0 0% 99%",
+        "secondary": "0 0% 96%",
+        "secondary-foreground": "0 0% 7%",
+        "muted": "0 0% 95%",
+        "muted-foreground": "0 0% 42%",
+        "accent": "0 0% 93%",
+        "accent-foreground": "0 0% 7%",
+        "destructive": "0 72% 45%",
+        "destructive-foreground": "0 0% 99%",
+        "border": "0 0% 88%",
+        "input": "0 0% 88%",
+        "ring": "0 0% 7%",
+        "brand": "0 0% 7%",
+        "brand-foreground": "0 0% 99%",
+        "ink": "0 0% 4%"
+      },
+      "dark": {
+        "background": "0 0% 4%",
+        "foreground": "0 0% 96%",
+        "card": "0 0% 8%",
+        "card-foreground": "0 0% 96%",
+        "popover": "0 0% 8%",
+        "popover-foreground": "0 0% 96%",
+        "primary": "0 0% 96%",
+        "primary-foreground": "0 0% 4%",
+        "secondary": "0 0% 13%",
+        "secondary-foreground": "0 0% 96%",
+        "muted": "0 0% 13%",
+        "muted-foreground": "0 0% 62%",
+        "accent": "0 0% 16%",
+        "accent-foreground": "0 0% 96%",
+        "destructive": "0 72% 45%",
+        "destructive-foreground": "0 0% 99%",
+        "border": "0 0% 18%",
+        "input": "0 0% 18%",
+        "ring": "0 0% 80%",
+        "brand": "0 0% 96%",
+        "brand-foreground": "0 0% 4%",
+        "ink": "0 0% 2%"
+      }
+    },
+    "fonts": { "display": "jost", "body": "sans" },
+    "radius": "0rem"
+  },
+  "preview": {
+    "swatch": {
+      "bg": "hsl(0 0% 99%)",
+      "fg": "hsl(0 0% 7%)",
+      "brand": "hsl(0 0% 7%)",
+      "muted": "hsl(0 0% 95%)"
+    },
+    "swatchDark": {
+      "bg": "hsl(0 0% 4%)",
+      "fg": "hsl(0 0% 96%)",
+      "brand": "hsl(0 0% 96%)",
+      "muted": "hsl(0 0% 13%)"
+    }
+  }
+}

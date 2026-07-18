@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecom_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ecom
+      POSTGRES_PASSWORD: ecom_pass
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecom -d ecommerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    container_name: ecom_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ecom
+      MONGO_INITDB_ROOT_PASSWORD: ecom_pass
+      MONGO_INITDB_DATABASE: ecommerce
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecom_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  mongodata:
+  redisdata:
