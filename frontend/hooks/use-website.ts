@@ -12,6 +12,8 @@ export interface Section {
   config: Record<string, unknown>;
   order: number;
   isVisible: boolean;
+  /** Theme slug this section renders in, or null/absent for every theme. */
+  theme?: string | null;
 }
 
 export function useAdminSections() {
@@ -26,7 +28,7 @@ export function useSectionMutations() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ['homepage-admin'] });
   return {
     create: useMutation({
-      mutationFn: (body: { type: string; title?: string }) =>
+      mutationFn: (body: { type: string; title?: string; theme?: string }) =>
         api.post<Section>('/homepage', body),
       onSuccess: invalidate,
     }),
@@ -190,21 +192,39 @@ export function usePopupMutations() {
 }
 
 // ── SEO ──
+export type SeoScope = 'global' | 'product' | 'category' | 'page';
 export interface SeoMeta {
-  scope: string;
+  _id?: string;
+  scope: SeoScope;
+  entityId?: string | null;
   title?: string;
   description?: string;
   keywords?: string[];
   ogImage?: string;
+  canonicalUrl?: string;
   noindex?: boolean;
 }
 export function useGlobalSeo() {
   return useQuery({ queryKey: ['seo-global'], queryFn: () => api.get<SeoMeta | null>('/seo/global') });
 }
+/** Every stored SEO entry (global + overrides) — the admin panel's list. */
+export function useSeoEntries() {
+  return useQuery({ queryKey: ['seo-entries'], queryFn: () => api.get<SeoMeta[]>('/seo') });
+}
 export function useSaveSeo() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: SeoMeta) => api.put<SeoMeta>('/seo', body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['seo-global'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['seo-global'] });
+      qc.invalidateQueries({ queryKey: ['seo-entries'] });
+    },
+  });
+}
+export function useDeleteSeo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.del(`/seo/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['seo-entries'] }),
   });
 }

@@ -21,7 +21,11 @@ import {
   type ProductFilterValue,
 } from '@/components/storefront/product-filters';
 import { useLayout } from '@/themes/runtime/theme-runtime';
-import { useStorefrontProducts, type ProductSort } from '@/hooks/use-storefront';
+import {
+  useCatalogScope,
+  useStorefrontProducts,
+  type ProductSort,
+} from '@/hooks/use-storefront';
 import { cn } from '@/lib/utils';
 import type { CategoryTemplateProps } from '@/themes/contract';
 
@@ -104,11 +108,16 @@ export default function CategoryTemplate({ query }: CategoryTemplateProps) {
     setPage(1);
   }, [debouncedSearch, sort, filters]);
 
+  // Single-vertical themes browse only their subtree; a user-chosen
+  // subcategory (always inside the scope) wins over the scope root.
+  const scope = useCatalogScope();
+
   const { data, isLoading, isFetching } = useStorefrontProducts({
     page,
     search: debouncedSearch || undefined,
     sort,
     ...filters,
+    categoryId: filters.categoryId ?? scope.id,
   });
 
   const products = data?.data ?? [];
@@ -304,7 +313,12 @@ export default function CategoryTemplate({ query }: CategoryTemplateProps) {
       {isTopbar ? (
         // Filters run across the top; the grid gets the full width.
         <div className="space-y-8">
-          <ProductFilters value={filters} onChange={setFilters} variant="topbar" />
+          <ProductFilters
+            value={filters}
+            onChange={setFilters}
+            variant="topbar"
+            scopeId={scope.id}
+          />
           {results}
         </div>
       ) : (
@@ -318,7 +332,12 @@ export default function CategoryTemplate({ query }: CategoryTemplateProps) {
           }}
         >
           <div className={cn('lg:block', showFilters ? 'block' : 'hidden')}>
-            <ProductFilters value={filters} onChange={setFilters} dense={isDense} />
+            <ProductFilters
+              value={filters}
+              onChange={setFilters}
+              dense={isDense}
+              scopeId={scope.id}
+            />
           </div>
           {results}
         </div>

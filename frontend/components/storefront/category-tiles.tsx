@@ -55,7 +55,10 @@ export function CategoryTiles({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://picsum.photos/seed/family-${category.slug}/500/700`}
+                  src={
+                    category.imageUrl ||
+                    `https://picsum.photos/seed/family-${category.slug}/500/700`
+                  }
                   alt=""
                   aria-hidden
                   loading="lazy"

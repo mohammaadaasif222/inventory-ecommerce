@@ -54,6 +54,10 @@ export class SeoService {
       .lean();
   }
 
+  async remove(id: string): Promise<void> {
+    await this.meta.deleteOne({ _id: id });
+  }
+
   /** Per-entity meta merged over global defaults. */
   async resolve(scope: SeoScope, entityId: string): Promise<SeoMeta | null> {
     const [global, specific] = await Promise.all([

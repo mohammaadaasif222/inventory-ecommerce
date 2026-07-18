@@ -162,6 +162,14 @@ export class ListProductsQueryDto extends PaginationQueryDto {
   @IsEnum(ProductStatus)
   status?: ProductStatus;
 
+  @ApiPropertyOptional({
+    description:
+      'Active theme slug — drops products hidden in that theme (storefront)',
+  })
+  @IsOptional()
+  @IsString()
+  theme?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()

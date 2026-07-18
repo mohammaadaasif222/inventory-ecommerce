@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
+import { useTheme, useThemeSlugSafe } from '@/themes/runtime/theme-runtime';
 import type { Product } from '@/schemas/product.schema';
 
 export interface HomepageSection {
@@ -22,10 +23,17 @@ export interface KbArticle {
   views?: number;
 }
 
+/**
+ * The active theme's homepage sections: its own plus the shared ones.
+ *
+ * Keyed by the slug actually rendering (not the DB-active theme), so an
+ * admin previewing an inactive theme sees that theme's sections too.
+ */
 export function useHomepageSections() {
+  const { slug } = useTheme();
   return useQuery({
-    queryKey: ['homepage'],
-    queryFn: () => api.get<HomepageSection[]>('/homepage'),
+    queryKey: ['homepage', slug],
+    queryFn: () => api.get<HomepageSection[]>('/homepage', { theme: slug }),
   });
 }
 
@@ -48,9 +56,13 @@ export interface StorefrontProductParams {
 }
 
 export function useStorefrontProducts(params: StorefrontProductParams) {
+  // Per-theme visibility: the rendered theme's slug rides every storefront
+  // product query, so products hidden in this theme never surface. Null
+  // outside the storefront (admin), which sees the full catalog.
+  const themeSlug = useThemeSlugSafe();
   // Drop empty filters so the query key (and the URL) stay stable.
   const clean = Object.fromEntries(
-    Object.entries(params).filter(
+    Object.entries({ ...params, theme: themeSlug ?? undefined }).filter(
       ([, v]) => v !== undefined && v !== null && v !== '',
     ),
   );
@@ -99,6 +111,8 @@ export interface Category {
   name: string;
   slug: string;
   isActive: boolean;
+  /** Admin-uploaded tile/lifestyle image; themes fall back to placeholders. */
+  imageUrl?: string | null;
   children?: Category[];
 }
 
@@ -108,6 +122,42 @@ export function useCategories() {
     queryFn: () => api.get<Category[]>('/catalog/categories'),
     staleTime: 5 * 60 * 1000,
   });
+}
+
+function findBySlug(nodes: Category[] | undefined, slug: string): Category | null {
+  for (const node of nodes ?? []) {
+    if (node.slug === slug) return node;
+    const hit = findBySlug(node.children, slug);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+export interface CatalogScope {
+  /** Category id to constrain product queries to, or undefined = whole catalog. */
+  id?: string;
+  /** The resolved scope category, when the theme declares one that exists. */
+  category?: Category;
+  /** Its children — a single-vertical theme's navigation entries. */
+  children: Category[];
+}
+
+/**
+ * The active theme's catalog scope, resolved against the live category tree.
+ *
+ * Single-vertical themes (perfume, home decor) declare `catalogScope` in their
+ * config; this turns that slug into a category id the product queries filter
+ * by (the backend includes descendants). A slug that matches nothing degrades
+ * to unscoped — a mis-set scope should never blank the storefront.
+ */
+export function useCatalogScope(): CatalogScope {
+  const { catalogScope } = useTheme();
+  const { data: categories } = useCategories();
+
+  if (!catalogScope) return { children: categories ?? [] };
+  const category = findBySlug(categories, catalogScope);
+  if (!category) return { children: categories ?? [] };
+  return { id: category.id, category, children: category.children ?? [] };
 }
 
 export interface Brand {

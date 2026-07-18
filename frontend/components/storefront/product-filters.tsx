@@ -24,6 +24,12 @@ interface ProductFiltersProps {
   variant?: 'sidebar' | 'topbar';
   /** Tightens spacing for dense layouts. */
   dense?: boolean;
+  /**
+   * Category id the active theme scopes the catalog to. When set, the
+   * category filter offers only that subtree ("All" = the whole scope) —
+   * a perfume theme should not offer furniture categories.
+   */
+  scopeId?: string;
 }
 
 /** Preset brackets cover the seeded catalogue's ₹199–₹1,89,999 spread. */
@@ -111,9 +117,23 @@ export function ProductFilters({
   onChange,
   variant = 'sidebar',
   dense = false,
+  scopeId,
 }: ProductFiltersProps) {
-  const { data: categories } = useCategories();
+  const { data: allCategories } = useCategories();
   const { data: brands } = useBrands();
+
+  // Scoped themes filter within their subtree only.
+  const findNode = (nodes: Category[] | undefined, id: string): Category | null => {
+    for (const node of nodes ?? []) {
+      if (node.id === id) return node;
+      const hit = findNode(node.children, id);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const categories = scopeId
+    ? (findNode(allCategories, scopeId)?.children ?? [])
+    : allCategories;
 
   // Local text state so typing a price doesn't fire a request per keystroke.
   const [minInput, setMinInput] = useState(value.minPrice?.toString() ?? '');

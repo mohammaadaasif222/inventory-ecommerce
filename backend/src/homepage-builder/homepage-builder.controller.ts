@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { HomepageBuilderService } from './homepage-builder.service';
@@ -29,8 +30,8 @@ export class HomepageBuilderController {
   @Public()
   @Get()
   @ResponseMessage('Homepage sections loaded')
-  publicSections() {
-    return this.homepage.publicSections();
+  publicSections(@Query('theme') theme?: string) {
+    return this.homepage.publicSections(theme);
   }
 
   @ApiBearerAuth()

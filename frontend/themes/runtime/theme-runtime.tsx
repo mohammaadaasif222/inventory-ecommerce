@@ -44,6 +44,17 @@ export function useTheme(): AppliedTheme {
 }
 
 /**
+ * The rendered theme's slug, or null outside the storefront.
+ *
+ * For hooks shared between storefront and admin (product queries): the
+ * storefront passes the slug so per-theme visibility applies; the admin gets
+ * null and sees everything.
+ */
+export function useThemeSlugSafe(): string | null {
+  return useContext(ThemeContext)?.slug ?? null;
+}
+
+/**
  * Structure and density for the active theme.
  *
  * Components read these fields instead of branching on a theme slug — the one

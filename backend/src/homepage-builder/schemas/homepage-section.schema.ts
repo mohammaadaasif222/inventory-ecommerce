@@ -29,6 +29,15 @@ export class HomepageSection {
 
   @Prop({ default: true })
   isVisible: boolean;
+
+  /**
+   * Theme slug this section belongs to, or null for every theme.
+   *
+   * Lets each theme carry its own hero and sections (a perfume hero on
+   * Essence, a room hero on Hearth) while shared sections stay shared.
+   */
+  @Prop({ type: String, default: null, index: true })
+  theme: string | null;
 }
 
 export const HomepageSectionSchema =

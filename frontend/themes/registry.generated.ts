@@ -9,7 +9,7 @@
  * The dynamic imports below are literal on purpose: Next.js can only code-split
  * what it can see statically, so an inactive theme costs nothing at runtime.
  *
- * Themes discovered: base, botanica, essence, maison, noir, universal
+ * Themes discovered: base, botanica, decor, essence, maison, noir, universal
  */
 
 import type { SlotId, TemplateId } from './contract';
@@ -17,6 +17,7 @@ import type { ThemeConfigSource } from './config';
 
 import baseConfig from './base/theme.config.json';
 import botanicaConfig from './botanica/theme.config.json';
+import decorConfig from './decor/theme.config.json';
 import essenceConfig from './essence/theme.config.json';
 import maisonConfig from './maison/theme.config.json';
 import noirConfig from './noir/theme.config.json';
@@ -26,6 +27,7 @@ import universalConfig from './universal/theme.config.json';
 export const THEME_SOURCES: Record<string, ThemeConfigSource> = {
   'base': baseConfig as ThemeConfigSource,
   'botanica': botanicaConfig as ThemeConfigSource,
+  'decor': decorConfig as ThemeConfigSource,
   'essence': essenceConfig as ThemeConfigSource,
   'maison': maisonConfig as ThemeConfigSource,
   'noir': noirConfig as ThemeConfigSource,
@@ -65,6 +67,15 @@ export const THEME_LOADERS: Record<string, ThemePackageLoaders> = {
     slots: {
     },
   },
+  'decor': {
+    templates: {
+      'home': () => import('./decor/templates/home'),
+    },
+    slots: {
+      'header': () => import('./decor/components/header'),
+      'footer': () => import('./decor/components/footer'),
+    },
+  },
   'essence': {
     templates: {
       'home': () => import('./essence/templates/home'),
@@ -99,4 +110,4 @@ export const THEME_LOADERS: Record<string, ThemePackageLoaders> = {
 };
 
 /** Slugs of every installed theme, in directory order. */
-export const INSTALLED_THEMES = ["base","botanica","essence","maison","noir","universal"] as const;
+export const INSTALLED_THEMES = ["base","botanica","decor","essence","maison","noir","universal"] as const;

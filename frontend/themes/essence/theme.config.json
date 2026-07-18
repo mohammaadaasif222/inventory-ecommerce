@@ -5,6 +5,7 @@
   "description": "A boutique fragrance storefront in fresh teal and mint on crisp white. Overlay hero, explore tiles, stats band, always-visible sidebar filters, slide-out cart and a dark columned footer.",
   "author": "platform",
   "extends": "base",
+  "catalogScope": "perfume",
   "layoutPreset": "classic",
   "layout": {
     "footer": "columns",

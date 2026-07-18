@@ -10,6 +10,48 @@ export interface SiteSetting {
   isPublic: boolean;
 }
 
+// ── footer settings (admin-editable, storefront-rendered) ──
+export const FOOTER_SETTINGS_KEY = 'footer.settings';
+
+export interface FooterLink {
+  label: string;
+  href: string;
+}
+export interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+export interface FooterSettings {
+  aboutText?: string;
+  copyrightText?: string;
+  socials?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    youtube?: string;
+  };
+  columns?: FooterColumn[];
+  showPaymentBadges?: boolean;
+}
+
+/**
+ * All public settings as one map — the storefront's read path. One request,
+ * Redis-cached server-side, so every public setting rides the same fetch.
+ */
+export function usePublicConfig() {
+  return useQuery({
+    queryKey: ['config-public'],
+    queryFn: () => api.get<Record<string, unknown>>('/config/public'),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** One public setting's value out of the shared map (null while loading/unset). */
+export function usePublicSetting<T>(key: string): T | null {
+  const { data } = usePublicConfig();
+  return (data?.[key] ?? null) as T | null;
+}
+
 /** Fetch a single setting's value (null if unset). */
 export function useSetting<T>(key: string) {
   return useQuery({

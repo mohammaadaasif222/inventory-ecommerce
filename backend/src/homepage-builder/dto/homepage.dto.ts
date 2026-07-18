@@ -36,6 +36,13 @@ export class CreateSectionDto {
   @IsInt()
   @Min(0)
   order?: number;
+
+  @ApiPropertyOptional({
+    description: 'Theme slug this section is scoped to; empty/absent = all themes',
+  })
+  @IsOptional()
+  @IsString()
+  theme?: string;
 }
 
 export class UpdateSectionDto extends PartialType(CreateSectionDto) {}

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/storefront/product-card';
 import { RevealGroup, RevealItem } from '@/components/storefront/motion';
 import { useLayout } from '@/themes/runtime/theme-runtime';
-import { useStorefrontProducts } from '@/hooks/use-storefront';
+import { useCatalogScope, useStorefrontProducts } from '@/hooks/use-storefront';
 import { cn } from '@/lib/utils';
 import type { SearchTemplateProps } from '@/themes/contract';
 
@@ -27,10 +27,12 @@ export default function SearchTemplate({ q, query }: SearchTemplateProps) {
   const router = useRouter();
   const [term, setTerm] = useState(q);
 
+  const scope = useCatalogScope();
   const { data, isLoading } = useStorefrontProducts({
     page: query.page,
     search: q || undefined,
     sort: query.sort,
+    categoryId: scope.id,
   });
 
   const products = data?.data ?? [];

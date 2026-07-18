@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Facebook, Instagram, Sparkles, Twitter, Youtube } from 'lucide-react';
+import { Facebook, Instagram, Lamp, Twitter, Youtube } from 'lucide-react';
 import {
   FOOTER_SETTINGS_KEY,
   usePublicSetting,
@@ -10,41 +10,36 @@ import {
 } from '@/hooks/use-config';
 import { useLayout, useTheme } from '@/themes/runtime/theme-runtime';
 import { cn } from '@/lib/utils';
-import { PAYMENT_BADGES } from '../lib';
 
 /** Shipped defaults — used until the admin saves their own footer. */
 const DEFAULT_COLUMNS: FooterColumn[] = [
   {
-    title: 'Quick Links',
+    title: 'Shop',
     links: [
-      { label: 'Home', href: '/' },
       { label: 'All Products', href: '/products' },
-      { label: 'About', href: '/about' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'New Arrivals', href: '/products?sort=newest' },
+      { label: 'Bestsellers', href: '/products?sort=rating_desc' },
     ],
   },
   {
-    title: 'Explore',
+    title: 'Inspiration',
     links: [
-      { label: 'Bestsellers', href: '/products?sort=rating_desc' },
-      { label: 'New Arrivals', href: '/products?sort=newest' },
-      { label: 'The Collection', href: '/products' },
-      { label: 'Journal', href: '/blog' },
+      { label: 'Styling Journal', href: '/blog' },
+      { label: 'About the House', href: '/about' },
     ],
   },
   {
     title: 'Help',
     links: [
       { label: 'Track Order', href: '/track' },
-      { label: 'My Account', href: '/account' },
+      { label: 'Contact', href: '/contact' },
       { label: 'Delivery & Returns', href: '/help' },
-      { label: 'FAQs', href: '/help' },
     ],
   },
 ];
 
 const DEFAULT_ABOUT =
-  'Every bottle leaves the atelier sealed and cased for transit. Authenticity guaranteed, discretion assumed.';
+  'Pieces chosen slowly, made to be lived with — warm materials, honest craft, rooms that feel like yours.';
 
 const SOCIAL_ICONS = [
   { key: 'facebook', Icon: Facebook, label: 'Facebook' },
@@ -54,11 +49,11 @@ const SOCIAL_ICONS = [
 ] as const;
 
 /**
- * Essence footer — dark ground, brand block plus link columns, social icons,
- * and a copyright bar with payment badges. Content comes from the admin's
- * Website → Footer settings, falling back to the shipped defaults.
+ * Hearth footer — warm sand ground rather than dark ink: brand block, the
+ * admin's footer columns (Website → Footer), social icons and a quiet
+ * copyright line. Same data as the Essence footer, entirely different face.
  */
-export default function EssenceFooter() {
+export default function DecorFooter() {
   const layout = useLayout();
   const { name, logoUrl } = useTheme();
   const settings = usePublicSetting<FooterSettings>(FOOTER_SETTINGS_KEY);
@@ -69,10 +64,7 @@ export default function EssenceFooter() {
     : DEFAULT_COLUMNS;
   const about = settings?.aboutText?.trim() || DEFAULT_ABOUT;
   const copyright =
-    settings?.copyrightText?.trim() ||
-    `Copyright © ${year} ${name} | Powered by ${name}`;
-  const showBadges = settings?.showPaymentBadges ?? true;
-  // Only configured profiles render; no settings yet → show muted defaults.
+    settings?.copyrightText?.trim() || `© ${year} ${name}. Made for slow mornings.`;
   const socials = SOCIAL_ICONS.map(({ key, Icon, label }) => ({
     Icon,
     label,
@@ -80,29 +72,23 @@ export default function EssenceFooter() {
   })).filter((s) => (settings?.socials ? s.url : true));
 
   return (
-    <footer className="mt-auto bg-ink text-background">
-      <div
-        className={cn(
-          layout.container,
-          'grid gap-10 py-14 md:grid-cols-[1.3fr_1fr_1fr_1fr]',
-        )}
-      >
+    <footer className="mt-auto border-t bg-secondary text-secondary-foreground">
+      <div className={cn(layout.container, 'grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]')}>
         <div className="space-y-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-display text-2xl font-semibold uppercase tracking-[0.18em]"
-          >
+          <Link href="/" className="flex items-center gap-2 font-display text-2xl font-semibold tracking-tight">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt={name} className="h-9 w-auto object-contain" />
             ) : (
               <>
-                <Sparkles className="h-6 w-6 text-brand" aria-hidden />
+                <Lamp className="h-6 w-6 text-brand" aria-hidden />
                 {name}
               </>
             )}
           </Link>
-          <p className="max-w-xs text-sm leading-relaxed text-background/60">{about}</p>
+          <p className="max-w-xs text-sm leading-relaxed text-secondary-foreground/70">
+            {about}
+          </p>
           {socials.length > 0 && (
             <div className="flex items-center gap-3 pt-1">
               {socials.map(({ Icon, label, url }) => (
@@ -112,7 +98,7 @@ export default function EssenceFooter() {
                   target={url ? '_blank' : undefined}
                   rel={url ? 'noopener noreferrer' : undefined}
                   aria-label={label}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-background/10 transition-colors hover:bg-brand hover:text-brand-foreground"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-secondary-foreground/20 transition-colors hover:border-brand hover:bg-brand hover:text-brand-foreground"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -123,14 +109,14 @@ export default function EssenceFooter() {
 
         {columns.map((col) => (
           <nav key={col.title} aria-label={col.title} className="space-y-3">
-            <p className="font-display text-lg font-medium">{col.title}</p>
+            <p className="font-display text-lg">{col.title}</p>
             <ul className="space-y-2 text-sm">
               {col.links.map((link) => (
                 <li key={`${link.label}-${link.href}`}>
                   {link.href.startsWith('/') ? (
                     <Link
                       href={link.href}
-                      className="text-background/60 transition-colors hover:text-brand"
+                      className="text-secondary-foreground/70 transition-colors hover:text-brand"
                     >
                       {link.label}
                     </Link>
@@ -139,7 +125,7 @@ export default function EssenceFooter() {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-background/60 transition-colors hover:text-brand"
+                      className="text-secondary-foreground/70 transition-colors hover:text-brand"
                     >
                       {link.label}
                     </a>
@@ -151,26 +137,9 @@ export default function EssenceFooter() {
         ))}
       </div>
 
-      <div className="border-t border-background/10">
-        <div
-          className={cn(
-            layout.container,
-            'flex flex-col items-center justify-between gap-3 py-5 text-xs text-background/50 sm:flex-row',
-          )}
-        >
-          <p>{copyright}</p>
-          {showBadges && (
-            <div className="flex items-center gap-1.5" aria-label="Accepted payment methods">
-              {PAYMENT_BADGES.map((badge) => (
-                <span
-                  key={badge}
-                  className="rounded-sm bg-background/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink"
-                >
-                  {badge}
-                </span>
-              ))}
-            </div>
-          )}
+      <div className="border-t border-secondary-foreground/10">
+        <div className={cn(layout.container, 'py-5 text-center text-xs text-secondary-foreground/50')}>
+          {copyright}
         </div>
       </div>
     </footer>

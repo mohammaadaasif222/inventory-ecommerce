@@ -28,9 +28,23 @@ import {
 } from '@/hooks/use-website';
 import { useAuthStore } from '@/store/auth-store';
 import { config as appConfig } from '@/lib/config';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { api } from '@/lib/api-client';
+import { useCategories, type Category } from '@/hooks/use-storefront';
+import { useBulkThemeVisibility } from '@/hooks/use-theme-visibility';
 import { listSelectableThemes, listThemeConfigs } from '@/themes/catalog';
 import { LAYOUT_DEFS } from '@/themes/layouts';
-import { FONT_LABELS, FONT_KEYS, type ThemeCustomizations } from '@/themes/config';
+import {
+  FONT_LABELS,
+  FONT_KEYS,
+  type ResolvedThemeConfig,
+  type ThemeCustomizations,
+} from '@/themes/config';
 import { PREVIEW_PARAM } from '@/themes/runtime/theme-runtime';
 import { cn } from '@/lib/utils';
 
@@ -129,7 +143,7 @@ export default function ThemeManagerPage() {
     window.open(`/?${PREVIEW_PARAM}=${sessionId}`, '_blank', 'noopener');
   };
 
-  const publish = () => {
+  const doActivate = () => {
     if (!editing) return;
     activate.mutate(
       { slug: editing, customizations: draft },
@@ -138,6 +152,31 @@ export default function ThemeManagerPage() {
         onError: (e: Error) => toast.error(e.message),
       },
     );
+  };
+
+  const [migration, setMigration] = useState<string | null>(null);
+
+  /**
+   * Publish, with the theme-switch migration in front when it matters.
+   *
+   * Switching to an *unrestricted* theme (no catalogScope) raises the
+   * question restricted themes answer implicitly: should the other verticals'
+   * products (perfume, home decor…) appear in this store? The dialog writes
+   * per-theme visibility rows — nothing is ever deleted, and restricted
+   * themes hide out-of-scope products by category automatically.
+   */
+  const publish = () => {
+    if (!editing) return;
+    const switching = editing !== active?.slug;
+    const target = packages.find((p) => p.slug === editing);
+    const hasVerticals = packages.some(
+      (p) => p.slug !== editing && p.catalogScope,
+    );
+    if (switching && target && !target.catalogScope && hasVerticals) {
+      setMigration(editing);
+      return;
+    }
+    doActivate();
   };
 
   const saveOnly = () => {
@@ -167,6 +206,15 @@ export default function ThemeManagerPage() {
 
   return (
     <div className="space-y-6">
+      {migration && (
+        <MigrationDialog
+          targetSlug={migration}
+          targetName={packages.find((p) => p.slug === migration)?.name ?? migration}
+          verticals={packages.filter((p) => p.slug !== migration && p.catalogScope)}
+          onProceed={doActivate}
+          onClose={() => setMigration(null)}
+        />
+      )}
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Theme</h1>
@@ -636,5 +684,184 @@ function ColorField({
         />
       </div>
     </div>
+  );
+}
+
+// ── Theme-switch migration ─────────────────────────────────────────────────
+
+interface VerticalRow {
+  scopeSlug: string;
+  themeName: string;
+  category: Category;
+  count: number;
+}
+
+/**
+ * The "include these products?" step when activating an unrestricted theme.
+ *
+ * For each vertical theme's scope category that actually holds products, the
+ * admin chooses include (visibility overrides cleared) or hide (per-theme
+ * hide rows written). Products are never deleted; a vertical theme always
+ * shows its own catalog again the moment it is re-activated.
+ */
+function MigrationDialog({
+  targetSlug,
+  targetName,
+  verticals,
+  onProceed,
+  onClose,
+}: {
+  targetSlug: string;
+  targetName: string;
+  verticals: ResolvedThemeConfig[];
+  onProceed: () => void;
+  onClose: () => void;
+}) {
+  const { data: categories } = useCategories();
+  const bulk = useBulkThemeVisibility();
+  const [rows, setRows] = useState<VerticalRow[] | null>(null);
+  const [included, setIncluded] = useState<Record<string, boolean>>({});
+  const [applying, setApplying] = useState(false);
+
+  // Resolve each vertical's scope category and count its live products.
+  useEffect(() => {
+    if (!categories) return;
+    let alive = true;
+
+    const find = (nodes: Category[] | undefined, slug: string): Category | null => {
+      for (const node of nodes ?? []) {
+        if (node.slug === slug) return node;
+        const hit = find(node.children, slug);
+        if (hit) return hit;
+      }
+      return null;
+    };
+
+    const uniques = new Map<string, string>();
+    for (const v of verticals) {
+      if (v.catalogScope && !uniques.has(v.catalogScope)) {
+        uniques.set(v.catalogScope, v.name);
+      }
+    }
+
+    (async () => {
+      const resolved: VerticalRow[] = [];
+      for (const [scopeSlug, themeName] of uniques) {
+        const category = find(categories, scopeSlug);
+        if (!category) continue;
+        try {
+          const res = await api.getFull<unknown[]>('/products', {
+            categoryId: category.id,
+            status: 'ACTIVE',
+            limit: 1,
+          });
+          const count = res.meta?.total ?? 0;
+          if (count > 0) resolved.push({ scopeSlug, themeName, category, count });
+        } catch {
+          // Count failed: skip the row rather than block activation.
+        }
+      }
+      if (!alive) return;
+      setRows(resolved);
+      setIncluded(Object.fromEntries(resolved.map((r) => [r.scopeSlug, true])));
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [categories, verticals]);
+
+  // Nothing worth asking about → activate straight away.
+  useEffect(() => {
+    if (rows && rows.length === 0) {
+      onProceed();
+      onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows]);
+
+  const confirm = async () => {
+    if (!rows) return;
+    setApplying(true);
+    try {
+      for (const row of rows) {
+        await bulk.mutateAsync({
+          themeSlug: targetSlug,
+          categoryId: row.category.id,
+          visible: included[row.scopeSlug] ?? true,
+        });
+      }
+      onProceed();
+      onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Migration failed');
+      setApplying(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && !applying && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Activate {targetName}</DialogTitle>
+        </DialogHeader>
+
+        {!rows ? (
+          <div className="flex h-24 items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {targetName} shows every category. Choose whether products from
+              your vertical themes should appear in it — nothing is deleted
+              either way, and each vertical theme always shows its own products
+              again when re-activated.
+            </p>
+
+            <div className="space-y-2">
+              {rows.map((row) => (
+                <label
+                  key={row.scopeSlug}
+                  className="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors hover:border-brand/40"
+                >
+                  <input
+                    type="checkbox"
+                    checked={included[row.scopeSlug] ?? true}
+                    onChange={(e) =>
+                      setIncluded((prev) => ({
+                        ...prev,
+                        [row.scopeSlug]: e.target.checked,
+                      }))
+                    }
+                    className="mt-0.5 h-4 w-4"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium">
+                      Include {row.count} {row.category.name}{' '}
+                      {row.count === 1 ? 'product' : 'products'}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      From the {row.themeName} theme&apos;s catalog — unchecked,
+                      they stay hidden in {targetName} (never deleted).
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={onClose} disabled={applying}>
+                Cancel
+              </Button>
+              <Button onClick={confirm} disabled={applying}>
+                {applying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Apply &amp; activate
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

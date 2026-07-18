@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Pencil, Rotate3d, Trash2, Loader2, Search } from 'lucide-react';
+import { Layers, Plus, Pencil, Rotate3d, Trash2, Loader2, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ProductFormDialog } from '@/components/products/product-form-dialog';
+import { ThemeVisibilityDialog } from '@/components/products/theme-visibility-dialog';
 import { ViewerConfigDialog } from '@/components/products/viewer-config-dialog';
 import {
   useDeleteProduct,
@@ -38,6 +39,7 @@ export default function ProductsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [viewerFor, setViewerFor] = useState<Product | null>(null);
+  const [visibilityFor, setVisibilityFor] = useState<Product | null>(null);
 
   const { data, isLoading } = useProducts({ page, limit: 10, search });
   const del = useDeleteProduct();
@@ -144,6 +146,14 @@ export default function ProductsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label="Theme visibility"
+                      onClick={() => setVisibilityFor(p)}
+                    >
+                      <Layers className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       aria-label="3D / 360 viewer settings"
                       onClick={() => setViewerFor(p)}
                     >
@@ -206,6 +216,14 @@ export default function ProductsPage() {
           productId={viewerFor.id}
           productName={viewerFor.name}
           onClose={() => setViewerFor(null)}
+        />
+      )}
+
+      {visibilityFor && (
+        <ThemeVisibilityDialog
+          productId={visibilityFor.id}
+          productName={visibilityFor.name}
+          onClose={() => setVisibilityFor(null)}
         />
       )}
     </div>

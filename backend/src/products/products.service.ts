@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Product, ProductImage, ProductStatus } from './entities/product.entity';
 import { ProductVariant } from './entities/product-variant.entity';
+import { ProductThemeVisibility } from './entities/product-theme-visibility.entity';
 import {
   ViewerConfig,
   ViewerConfigJson,
@@ -61,6 +62,8 @@ export class ProductsService {
     private readonly variants: Repository<ProductVariant>,
     @InjectRepository(ViewerConfig)
     private readonly viewerConfigs: Repository<ViewerConfig>,
+    @InjectRepository(ProductThemeVisibility)
+    private readonly themeVisibility: Repository<ProductThemeVisibility>,
     private readonly uploads: UploadService,
     dataSource: DataSource,
   ) {
@@ -94,6 +97,15 @@ export class ProductsService {
   ): Promise<{ data: Product[]; meta: ResponseMeta }> {
     const qb = this.products.createQueryBuilder('p');
     if (query.status) qb.andWhere('p.status = :status', { status: query.status });
+    // Theme-scoped storefronts drop products explicitly hidden in that theme.
+    if (query.theme)
+      qb.andWhere(
+        `NOT EXISTS (SELECT 1 FROM product_theme_visibility v
+           WHERE v.product_id = p.id
+             AND v.theme_slug = :theme
+             AND v.visible = false)`,
+        { theme: query.theme },
+      );
     if (query.categoryId)
       qb.andWhere('p.categoryId IN (:...cids)', {
         cids: await this.categoryWithDescendants(query.categoryId),
@@ -380,6 +392,63 @@ export class ProductsService {
       if (!existing || existing.id === ignoreId) return candidate;
       candidate = `${base}-${++n}`;
     }
+  }
+
+  // ── per-theme visibility ──
+  /** Theme slugs this product is hidden in (visible everywhere else). */
+  async getHiddenThemes(productId: string): Promise<string[]> {
+    const rows = await this.themeVisibility.find({
+      where: { productId, visible: false },
+    });
+    return rows.map((r) => r.themeSlug);
+  }
+
+  /** Replace the product's hidden-theme list. */
+  async setHiddenThemes(
+    productId: string,
+    hiddenThemes: string[],
+  ): Promise<string[]> {
+    await this.findOne(productId); // 404s on unknown products
+    await this.themeVisibility.delete({ productId });
+    if (hiddenThemes.length > 0) {
+      await this.themeVisibility.save(
+        hiddenThemes.map((themeSlug) =>
+          this.themeVisibility.create({ productId, themeSlug, visible: false }),
+        ),
+      );
+    }
+    return hiddenThemes;
+  }
+
+  /**
+   * Theme-switch migration: show or hide a whole category subtree's products
+   * in one theme. `visible: true` deletes the overrides (back to the
+   * default-visible state); `false` writes hide rows. Products themselves are
+   * never touched.
+   */
+  async bulkSetThemeVisibility(
+    themeSlug: string,
+    categoryId: string,
+    visible: boolean,
+  ): Promise<{ affected: number }> {
+    const cids = await this.categoryWithDescendants(categoryId);
+    const products = await this.products
+      .createQueryBuilder('p')
+      .select('p.id', 'id')
+      .where('p.categoryId IN (:...cids)', { cids })
+      .getRawMany<{ id: string }>();
+    const ids = products.map((r) => r.id);
+    if (ids.length === 0) return { affected: 0 };
+
+    await this.themeVisibility.delete({ productId: In(ids), themeSlug });
+    if (!visible) {
+      await this.themeVisibility.save(
+        ids.map((productId) =>
+          this.themeVisibility.create({ productId, themeSlug, visible: false }),
+        ),
+      );
+    }
+    return { affected: ids.length };
   }
 
   // ── 3D / 360 viewer config ──

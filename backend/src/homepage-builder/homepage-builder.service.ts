@@ -18,12 +18,17 @@ export class HomepageBuilderService {
     private readonly sections: Model<HomepageSectionDocument>,
   ) {}
 
-  /** Visible sections in display order (storefront). */
-  publicSections(): Promise<HomepageSection[]> {
-    return this.sections
-      .find({ isVisible: true })
-      .sort({ order: 1 })
-      .lean();
+  /**
+   * Visible sections in display order (storefront).
+   *
+   * With a theme slug, returns that theme's own sections plus the shared ones
+   * (`theme: null`); without one, everything visible — the pre-scoping
+   * behaviour, kept for older clients.
+   */
+  publicSections(theme?: string): Promise<HomepageSection[]> {
+    const filter: Record<string, unknown> = { isVisible: true };
+    if (theme) filter.$or = [{ theme: null }, { theme }];
+    return this.sections.find(filter).sort({ order: 1 }).lean();
   }
 
   /** All sections incl. hidden (admin builder). */
@@ -39,6 +44,7 @@ export class HomepageBuilderService {
       config: dto.config ?? {},
       isVisible: dto.isVisible ?? true,
       order,
+      theme: dto.theme || null,
     });
   }
 
@@ -52,6 +58,7 @@ export class HomepageBuilderService {
     if (dto.config !== undefined) section.config = dto.config;
     if (dto.isVisible !== undefined) section.isVisible = dto.isVisible;
     if (dto.order !== undefined) section.order = dto.order;
+    if (dto.theme !== undefined) section.theme = dto.theme || null;
     return section.save();
   }
 

@@ -1,0 +1,82 @@
+{
+  "name": "Hearth",
+  "slug": "decor",
+  "version": "1.0.0",
+  "description": "A lifestyle home-decor storefront. Warm terracotta and sand, Fraunces serif headlines, room-by-room browsing, styling-journal teasers and large lifestyle photography. Scoped to the home-decor catalog.",
+  "author": "platform",
+  "extends": "base",
+  "catalogScope": "home-decor",
+  "layoutPreset": "editorial",
+  "layout": {
+    "footer": "columns",
+    "sectionPadding": "py-16"
+  },
+  "tokens": {
+    "colors": {
+      "light": {
+        "background": "35 42% 97%",
+        "foreground": "24 22% 18%",
+        "card": "35 45% 99%",
+        "card-foreground": "24 22% 18%",
+        "popover": "35 45% 99%",
+        "popover-foreground": "24 22% 18%",
+        "primary": "18 58% 42%",
+        "primary-foreground": "35 42% 97%",
+        "secondary": "33 36% 90%",
+        "secondary-foreground": "24 30% 22%",
+        "muted": "33 28% 93%",
+        "muted-foreground": "24 12% 44%",
+        "accent": "80 22% 88%",
+        "accent-foreground": "80 30% 20%",
+        "destructive": "4 64% 46%",
+        "destructive-foreground": "35 42% 97%",
+        "border": "33 22% 86%",
+        "input": "33 22% 82%",
+        "ring": "18 58% 42%",
+        "brand": "18 58% 42%",
+        "brand-foreground": "35 42% 97%",
+        "ink": "22 28% 11%"
+      },
+      "dark": {
+        "background": "22 18% 9%",
+        "foreground": "34 30% 91%",
+        "card": "22 16% 12%",
+        "card-foreground": "34 30% 91%",
+        "popover": "22 16% 12%",
+        "popover-foreground": "34 30% 91%",
+        "primary": "18 62% 52%",
+        "primary-foreground": "22 25% 8%",
+        "secondary": "24 14% 17%",
+        "secondary-foreground": "34 26% 88%",
+        "muted": "24 12% 16%",
+        "muted-foreground": "33 10% 62%",
+        "accent": "80 12% 20%",
+        "accent-foreground": "80 22% 85%",
+        "destructive": "4 60% 46%",
+        "destructive-foreground": "35 42% 97%",
+        "border": "24 12% 20%",
+        "input": "24 12% 20%",
+        "ring": "18 62% 52%",
+        "brand": "18 62% 52%",
+        "brand-foreground": "22 25% 8%",
+        "ink": "22 25% 5%"
+      }
+    },
+    "fonts": { "display": "fraunces", "body": "sans" },
+    "radius": "0.375rem"
+  },
+  "preview": {
+    "swatch": {
+      "bg": "hsl(35 42% 97%)",
+      "fg": "hsl(24 22% 18%)",
+      "brand": "hsl(18 58% 42%)",
+      "muted": "hsl(33 36% 90%)"
+    },
+    "swatchDark": {
+      "bg": "hsl(22 18% 9%)",
+      "fg": "hsl(34 30% 91%)",
+      "brand": "hsl(18 62% 52%)",
+      "muted": "hsl(24 14% 17%)"
+    }
+  }
+}

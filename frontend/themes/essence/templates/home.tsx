@@ -28,7 +28,7 @@ import type { HeroSlide } from '@/components/storefront/hero-carousel';
 import type { Testimonial } from '@/components/storefront/testimonials';
 import { useOffers } from '@/hooks/use-coupons';
 import {
-  useCategories,
+  useCatalogScope,
   useHomepageSections,
   useProductsByIds,
   useStorefrontProducts,
@@ -187,11 +187,11 @@ function OverlayHero({ slide }: { slide: HeroSlide }) {
   );
 }
 
-/** Wide "Explore <category> →" tiles from the live top-level categories. */
+/** Wide "Explore <category> →" tiles — the theme's scope children when scoped. */
 function ExploreTiles() {
   const layout = useLayout();
-  const { data: categories } = useCategories();
-  const tiles = (categories ?? []).slice(0, 2);
+  const scope = useCatalogScope();
+  const tiles = scope.children.slice(0, 2);
 
   if (tiles.length === 0) return null;
 
@@ -206,7 +206,10 @@ function ExploreTiles() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://picsum.photos/seed/essence-${category.slug}/900/460`}
+                src={
+                  category.imageUrl ||
+                  `https://picsum.photos/seed/essence-${category.slug}/900/460`
+                }
                 alt=""
                 aria-hidden
                 loading="lazy"
@@ -233,7 +236,12 @@ function PromoBanner() {
   const layout = useLayout();
   const reduced = useReducedMotion();
   const { data: offers } = useOffers();
-  const { data: newest } = useStorefrontProducts({ page: 1, sort: 'newest' });
+  const scope = useCatalogScope();
+  const { data: newest } = useStorefrontProducts({
+    page: 1,
+    sort: 'newest',
+    categoryId: scope.id,
+  });
   const [index, setIndex] = useState(0);
 
   const rotating = (offers ?? []).slice(0, 4);
@@ -354,7 +362,12 @@ function ProductGridSection({
 }
 
 function NewArrivals() {
-  const { data } = useStorefrontProducts({ page: 1, sort: 'newest' });
+  const scope = useCatalogScope();
+  const { data } = useStorefrontProducts({
+    page: 1,
+    sort: 'newest',
+    categoryId: scope.id,
+  });
   return (
     <ProductGridSection title="New Arrivals" products={(data?.data ?? []).slice(0, 4)} />
   );
@@ -363,7 +376,12 @@ function NewArrivals() {
 /** Two image-and-copy splits — the craft story between the grids. */
 function CraftStory() {
   const layout = useLayout();
-  const { data } = useStorefrontProducts({ page: 1, sort: 'rating_desc' });
+  const scope = useCatalogScope();
+  const { data } = useStorefrontProducts({
+    page: 1,
+    sort: 'rating_desc',
+    categoryId: scope.id,
+  });
   const images = (data?.data ?? [])
     .map((p) => p.images?.[0]?.url)
     .filter(Boolean) as string[];
@@ -568,7 +586,12 @@ function TestimonialCards({ section }: { section: HomepageSection }) {
 /** Mint "Follow @brand" band over an edge-to-edge product gallery. */
 function InstagramStrip() {
   const { name } = useTheme();
-  const { data } = useStorefrontProducts({ page: 1, sort: 'newest' });
+  const scope = useCatalogScope();
+  const { data } = useStorefrontProducts({
+    page: 1,
+    sort: 'newest',
+    categoryId: scope.id,
+  });
   const tiles = (data?.data ?? []).filter((p) => p.images?.[0]?.url).slice(0, 6);
 
   if (tiles.length < 3) return null;

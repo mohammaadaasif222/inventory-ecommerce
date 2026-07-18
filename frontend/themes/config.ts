@@ -191,6 +191,14 @@ export interface ThemeConfigSource {
     radius?: string;
   };
   /**
+   * Category slug this theme's storefront is scoped to (`"perfume"`,
+   * `"home-decor"`). A single-vertical theme shows only that category's
+   * subtree in its menus, listings and rails; absent/null means the whole
+   * catalog. Data is never touched — other products simply don't render
+   * while this theme is active. Unresolvable slugs degrade to unscoped.
+   */
+  catalogScope?: string | null;
+  /**
    * Which shared layout the theme is designed around (see `themes/layouts.ts`).
    *
    * Named rather than inlined so design and arrangement stay orthogonal: the
@@ -224,6 +232,8 @@ export interface ResolvedThemeConfig {
     fonts: FontTokens;
     radius: string;
   };
+  /** Category slug the storefront is scoped to, or null for the whole catalog. */
+  catalogScope: string | null;
   /** The preset the theme was authored against; the customiser may replace it. */
   layoutPreset: string;
   layout: LayoutTokens;
@@ -264,6 +274,8 @@ export function mergeConfig(
       fonts: { ...parent.tokens.fonts, ...child.tokens?.fonts },
       radius: child.tokens?.radius ?? parent.tokens.radius,
     },
+    catalogScope:
+      child.catalogScope !== undefined ? child.catalogScope : parent.catalogScope,
     layoutPreset: child.layoutPreset ?? parent.layoutPreset,
     layout: resolveLayout(parent, child),
     checkout: { ...parent.checkout, ...child.checkout },
@@ -372,6 +384,7 @@ function assertComplete(source: ThemeConfigSource): ResolvedThemeConfig {
       fonts: source.tokens!.fonts as FontTokens,
       radius: source.tokens?.radius ?? '0.5rem',
     },
+    catalogScope: source.catalogScope ?? null,
     // A root theme may omit `layout` entirely and take the preset as-is —
     // unlike tokens, there is always a sane shared default to fall back to.
     layoutPreset: source.layoutPreset ?? DEFAULT_LAYOUT_PRESET,

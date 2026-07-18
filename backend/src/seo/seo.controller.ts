@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SeoService } from './seo.service';
 import { SeoScope } from './schemas/seo-meta.schema';
@@ -43,5 +51,14 @@ export class SeoController {
   @ResponseMessage('SEO saved')
   upsert(@Body() dto: UpsertSeoDto) {
     return this.seo.upsert(dto);
+  }
+
+  @ApiBearerAuth()
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Delete(':id')
+  @ResponseMessage('SEO entry removed')
+  async remove(@Param('id') id: string) {
+    await this.seo.remove(id);
+    return { removed: true };
   }
 }

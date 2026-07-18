@@ -20,7 +20,7 @@ import { formatPrice } from '@/components/storefront/product-card';
 import { useAuthStore } from '@/store/auth-store';
 import { useCartStore } from '@/store/cart-store';
 import { useOffers } from '@/hooks/use-coupons';
-import { useCategories } from '@/hooks/use-storefront';
+import { useCatalogScope } from '@/hooks/use-storefront';
 import { useLayout, useTheme } from '@/themes/runtime/theme-runtime';
 import { cn } from '@/lib/utils';
 import { FREE_SHIPPING_THRESHOLD, OPEN_CART_EVENT, openCartDrawer } from '../lib';
@@ -37,11 +37,12 @@ export default function EssenceHeader() {
   const { name: brandName, logoUrl } = useTheme();
   const user = useAuthStore((s) => s.user);
   const items = useCartStore((s) => s.items);
-  const { data: categories } = useCategories();
+  const scope = useCatalogScope();
   const [cartOpen, setCartOpen] = useState(false);
 
   const cartCount = items.reduce((n, i) => n + i.quantity, 0);
-  const topCategories = (categories ?? []).slice(0, 3);
+  // Scoped: the perfume families; unscoped fallback: the top-level tree.
+  const topCategories = scope.children.slice(0, 3);
 
   // Add-to-cart actions anywhere on the page open the drawer via this event.
   useEffect(() => {

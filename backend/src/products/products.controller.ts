@@ -31,6 +31,10 @@ import {
   UpdateProductDto,
 } from './dto/product.dto';
 import { SaveViewerConfigDto } from './dto/viewer-config.dto';
+import {
+  BulkThemeVisibilityDto,
+  SetThemeVisibilityDto,
+} from './dto/theme-visibility.dto';
 
 const MANAGE = [Role.ADMIN, Role.SUPER_ADMIN, Role.VENDOR];
 
@@ -56,6 +60,42 @@ export class ProductsController {
   @Get(':id')
   byId(@Param('id', ParseUUIDPipe) id: string) {
     return this.products.findOne(id);
+  }
+
+  // ── per-theme visibility ──
+  /** Theme-switch migration: bulk show/hide a category's products per theme. */
+  @ApiBearerAuth()
+  @Roles(...MANAGE)
+  @Post('theme-visibility/bulk')
+  @Audit('PRODUCT_THEME_VISIBILITY_BULK', 'Product')
+  @ResponseMessage('Theme visibility updated')
+  bulkThemeVisibility(@Body() dto: BulkThemeVisibilityDto) {
+    return this.products.bulkSetThemeVisibility(
+      dto.themeSlug,
+      dto.categoryId,
+      dto.visible,
+    );
+  }
+
+  @ApiBearerAuth()
+  @Roles(...MANAGE)
+  @Get(':id/theme-visibility')
+  @ResponseMessage('Theme visibility loaded')
+  async themeVisibility(@Param('id', ParseUUIDPipe) id: string) {
+    return { hiddenThemes: await this.products.getHiddenThemes(id) };
+  }
+
+  @ApiBearerAuth()
+  @Roles(...MANAGE)
+  @Put(':id/theme-visibility')
+  @ResponseMessage('Theme visibility saved')
+  async setThemeVisibility(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetThemeVisibilityDto,
+  ) {
+    return {
+      hiddenThemes: await this.products.setHiddenThemes(id, dto.hiddenThemes),
+    };
   }
 
   // ── 3D / 360 viewer widget ──
