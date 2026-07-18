@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navbar } from '@/components/storefront/navbar';
 import { CartSync } from '@/components/storefront/cart-sync';
 import { StoreFooter } from '@/components/storefront/footer';
+import { StorefrontPopups } from '@/components/storefront/popups';
 import { ChatWidget } from '@/components/chat/chat-widget';
 import { ThemeRuntime } from '@/themes/runtime/theme-runtime';
 import { applyCustomizations } from '@/themes/config';
@@ -49,6 +50,7 @@ export default async function StorefrontLayout({
 
   return (
     <ThemeRuntime theme={theme}>
+      <StorefrontPopups />
       {Header ? <Header /> : <Navbar />}
       <main className="flex-1">{children}</main>
       {Footer ? <Footer /> : <StoreFooter />}

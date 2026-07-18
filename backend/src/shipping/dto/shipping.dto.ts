@@ -119,4 +119,10 @@ export class UpdateShipmentStatusDto {
   @IsOptional()
   @IsString()
   trackingNumber?: string;
+
+  @ApiPropertyOptional({ example: 'Departed Mumbai sorting facility' })
+  @IsOptional()
+  @IsString()
+  @Length(1, 500)
+  note?: string;
 }

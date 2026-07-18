@@ -14,6 +14,7 @@ import { ShippingService } from './shipping.service';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Role } from '../common/enums/role.enum';
 import {
   CalculateRatesDto,
@@ -38,6 +39,26 @@ export class ShippingController {
   @ResponseMessage('Rates calculated')
   rates(@Body() dto: CalculateRatesDto) {
     return this.shipping.calculateRates(dto);
+  }
+
+  // ── tracking (storefront) ──
+  /** Anyone holding a tracking number can follow the parcel — no ids leak. */
+  @Public()
+  @Get('track/:trackingNumber')
+  @ResponseMessage('Tracking loaded')
+  track(@Param('trackingNumber') trackingNumber: string) {
+    return this.shipping.trackByNumber(trackingNumber);
+  }
+
+  /** A signed-in customer's shipments for their own order. */
+  @ApiBearerAuth()
+  @Get('orders/:orderId/shipments')
+  @ResponseMessage('Shipments loaded')
+  myOrderShipments(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.shipping.shipmentsForOwnedOrder(orderId, userId);
   }
 
   // ── zones ──

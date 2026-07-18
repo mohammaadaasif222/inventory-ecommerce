@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
   UploadedFile,
   UploadedFiles,
@@ -29,6 +30,7 @@ import {
   ListProductsQueryDto,
   UpdateProductDto,
 } from './dto/product.dto';
+import { SaveViewerConfigDto } from './dto/viewer-config.dto';
 
 const MANAGE = [Role.ADMIN, Role.SUPER_ADMIN, Role.VENDOR];
 
@@ -54,6 +56,27 @@ export class ProductsController {
   @Get(':id')
   byId(@Param('id', ParseUUIDPipe) id: string) {
     return this.products.findOne(id);
+  }
+
+  // ── 3D / 360 viewer widget ──
+  /** The storefront reads this to decide how to present the product media. */
+  @Public()
+  @Get(':id/viewer')
+  @ResponseMessage('Viewer config loaded')
+  viewerConfig(@Param('id', ParseUUIDPipe) id: string) {
+    return this.products.getViewerConfig(id);
+  }
+
+  @ApiBearerAuth()
+  @Roles(...MANAGE)
+  @Put(':id/viewer')
+  @Audit('PRODUCT_VIEWER_UPDATED', 'Product')
+  @ResponseMessage('Viewer config saved')
+  saveViewerConfig(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SaveViewerConfigDto,
+  ) {
+    return this.products.saveViewerConfig(id, dto);
   }
 
   @ApiBearerAuth()

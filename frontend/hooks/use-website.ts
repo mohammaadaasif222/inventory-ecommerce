@@ -135,11 +135,18 @@ export function useThemeMutations() {
 }
 
 // ── Popups ──
+/** Free-form popup body: banner image, message and an optional link button. */
+export interface PopupContent {
+  message?: string;
+  imageUrl?: string;
+  buttonLabel?: string;
+  buttonUrl?: string;
+}
 export interface Popup {
   _id: string;
   type: string;
   title: string;
-  content: Record<string, unknown>;
+  content: PopupContent;
   displayRules: { delaySeconds?: number; scrollPercent?: number; pageTargets?: string[]; frequencyCap?: number };
   isActive: boolean;
 }
@@ -148,12 +155,27 @@ export const POPUP_TYPES = ['announcement_bar', 'exit_intent', 'timed_modal', 'c
 export function usePopups() {
   return useQuery({ queryKey: ['popups'], queryFn: () => api.get<Popup[]>('/popups') });
 }
+
+/** Active popups for a storefront path — public endpoint, no auth needed. */
+export function useActivePopups(path: string) {
+  return useQuery({
+    queryKey: ['popups-active', path],
+    queryFn: () => api.get<Popup[]>('/popups/active', { path }),
+  });
+}
+
 export function usePopupMutations() {
   const qc = useQueryClient();
   const invalidate = () => qc.invalidateQueries({ queryKey: ['popups'] });
   return {
     create: useMutation({
-      mutationFn: (body: { type: string; title?: string }) => api.post<Popup>('/popups', body),
+      mutationFn: (body: { type: string; title?: string; content?: PopupContent }) =>
+        api.post<Popup>('/popups', body),
+      onSuccess: invalidate,
+    }),
+    update: useMutation({
+      mutationFn: ({ id, body }: { id: string; body: { title?: string; content?: PopupContent } }) =>
+        api.patch<Popup>(`/popups/${id}`, body),
       onSuccess: invalidate,
     }),
     toggle: useMutation({

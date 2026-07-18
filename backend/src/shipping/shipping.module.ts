@@ -5,6 +5,8 @@ import { Queue } from 'bullmq';
 import { ShippingZone } from './entities/shipping-zone.entity';
 import { ShippingMethod } from './entities/shipping-method.entity';
 import { Shipment } from './entities/shipment.entity';
+import { ShipmentEvent } from './entities/shipment-event.entity';
+import { Order } from '../orders/entities/order.entity';
 import { ShippingService } from './shipping.service';
 import { ShippingController } from './shipping.controller';
 import { TrackingProcessor } from './tracking.processor';
@@ -15,7 +17,13 @@ import {
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ShippingZone, ShippingMethod, Shipment]),
+    TypeOrmModule.forFeature([
+      ShippingZone,
+      ShippingMethod,
+      Shipment,
+      ShipmentEvent,
+      Order,
+    ]),
     BullModule.registerQueue({ name: SHIPPING_TRACKING_QUEUE }),
   ],
   controllers: [ShippingController],

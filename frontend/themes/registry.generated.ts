@@ -72,6 +72,7 @@ export const THEME_LOADERS: Record<string, ThemePackageLoaders> = {
       'checkout': () => import('./essence/templates/checkout'),
     },
     slots: {
+      'header': () => import('./essence/components/header'),
       'footer': () => import('./essence/components/footer'),
     },
   },

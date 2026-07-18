@@ -1,9 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ShippingZone } from './entities/shipping-zone.entity';
 import { ShippingMethod } from './entities/shipping-method.entity';
 import { Shipment } from './entities/shipment.entity';
+import { ShipmentEvent } from './entities/shipment-event.entity';
+import { Order } from '../orders/entities/order.entity';
 import { RateType, ShipmentStatus } from './enums/shipping.enum';
 import { AppException, ErrorCode } from '../common/exceptions/app.exception';
 import {
@@ -25,6 +27,18 @@ export interface RateQuote {
   free: boolean;
 }
 
+export type ShipmentWithEvents = Shipment & { events: ShipmentEvent[] };
+
+/** Public tracking view — no ids, so a tracking number leaks nothing else. */
+export interface PublicTracking {
+  carrier: string;
+  trackingNumber: string;
+  status: ShipmentStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  events: { status: ShipmentStatus; note: string | null; createdAt: Date }[];
+}
+
 @Injectable()
 export class ShippingService {
   constructor(
@@ -34,6 +48,10 @@ export class ShippingService {
     private readonly methods: Repository<ShippingMethod>,
     @InjectRepository(Shipment)
     private readonly shipments: Repository<Shipment>,
+    @InjectRepository(ShipmentEvent)
+    private readonly events: Repository<ShipmentEvent>,
+    @InjectRepository(Order)
+    private readonly orders: Repository<Order>,
   ) {}
 
   // ── zones ──
@@ -124,8 +142,12 @@ export class ShippingService {
   }
 
   // ── shipments / tracking ──
-  createShipment(dto: CreateShipmentDto): Promise<Shipment> {
-    return this.shipments.save(
+  async createShipment(dto: CreateShipmentDto): Promise<Shipment> {
+    const order = await this.orders.findOne({ where: { id: dto.orderId } });
+    if (!order)
+      throw new AppException(ErrorCode.NOT_FOUND, 'Order not found', HttpStatus.NOT_FOUND);
+
+    const shipment = await this.shipments.save(
       this.shipments.create({
         orderId: dto.orderId,
         carrier: dto.carrier,
@@ -135,13 +157,61 @@ export class ShippingService {
           : ShipmentStatus.CREATED,
       }),
     );
+    await this.recordEvent(
+      shipment.id,
+      shipment.status,
+      dto.trackingNumber
+        ? `Label generated with ${dto.carrier} (${dto.trackingNumber})`
+        : `Shipment created with ${dto.carrier}`,
+    );
+    return shipment;
   }
 
-  listShipments(orderId?: string): Promise<Shipment[]> {
-    return this.shipments.find({
+  async listShipments(orderId?: string): Promise<ShipmentWithEvents[]> {
+    const shipments = await this.shipments.find({
       where: orderId ? { orderId } : {},
       order: { createdAt: 'DESC' },
     });
+    return this.withEvents(shipments);
+  }
+
+  /** A customer's shipments for their own order — 404 on anyone else's. */
+  async shipmentsForOwnedOrder(
+    orderId: string,
+    userId: string,
+  ): Promise<ShipmentWithEvents[]> {
+    const order = await this.orders.findOne({ where: { id: orderId } });
+    if (!order || order.customerId !== userId) {
+      throw new AppException(ErrorCode.NOT_FOUND, 'Order not found', HttpStatus.NOT_FOUND);
+    }
+    return this.listShipments(orderId);
+  }
+
+  /** Public track-by-number: latest shipment carrying that number, id-free. */
+  async trackByNumber(trackingNumber: string): Promise<PublicTracking> {
+    const shipment = await this.shipments.findOne({
+      where: { trackingNumber },
+      order: { createdAt: 'DESC' },
+    });
+    if (!shipment)
+      throw new AppException(
+        ErrorCode.NOT_FOUND,
+        'No shipment found for that tracking number',
+        HttpStatus.NOT_FOUND,
+      );
+    const [withEvents] = await this.withEvents([shipment]);
+    return {
+      carrier: shipment.carrier,
+      trackingNumber,
+      status: shipment.status,
+      createdAt: shipment.createdAt,
+      updatedAt: shipment.updatedAt,
+      events: withEvents.events.map((e) => ({
+        status: e.status,
+        note: e.note,
+        createdAt: e.createdAt,
+      })),
+    };
   }
 
   async updateShipmentStatus(
@@ -151,10 +221,44 @@ export class ShippingService {
     const shipment = await this.shipments.findOne({ where: { id } });
     if (!shipment)
       throw new AppException(ErrorCode.NOT_FOUND, 'Shipment not found', HttpStatus.NOT_FOUND);
+    const changed =
+      shipment.status !== dto.status ||
+      (dto.trackingNumber && dto.trackingNumber !== shipment.trackingNumber);
     shipment.status = dto.status;
     if (dto.trackingNumber) shipment.trackingNumber = dto.trackingNumber;
     shipment.lastPolledAt = new Date();
-    return this.shipments.save(shipment);
+    const saved = await this.shipments.save(shipment);
+    if (changed || dto.note) {
+      await this.recordEvent(saved.id, dto.status, dto.note ?? null);
+    }
+    return saved;
+  }
+
+  /** Append a checkpoint to a shipment's timeline. */
+  private recordEvent(
+    shipmentId: string,
+    status: ShipmentStatus,
+    note: string | null,
+  ): Promise<ShipmentEvent> {
+    return this.events.save(this.events.create({ shipmentId, status, note }));
+  }
+
+  /** Attach each shipment's timeline (oldest first) in one query. */
+  private async withEvents(shipments: Shipment[]): Promise<ShipmentWithEvents[]> {
+    if (shipments.length === 0) return [];
+    const events = await this.events.find({
+      where: { shipmentId: In(shipments.map((s) => s.id)) },
+      order: { createdAt: 'ASC' },
+    });
+    const byShipment = new Map<string, ShipmentEvent[]>();
+    for (const event of events) {
+      const list = byShipment.get(event.shipmentId) ?? [];
+      list.push(event);
+      byShipment.set(event.shipmentId, list);
+    }
+    return shipments.map((s) =>
+      Object.assign(s, { events: byShipment.get(s.id) ?? [] }),
+    );
   }
 
   /** Shipments still in flight — polled by the tracking BullMQ job. */

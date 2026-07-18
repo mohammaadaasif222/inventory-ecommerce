@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Loader2, Search } from 'lucide-react';
+import { Plus, Pencil, Rotate3d, Trash2, Loader2, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ProductFormDialog } from '@/components/products/product-form-dialog';
+import { ViewerConfigDialog } from '@/components/products/viewer-config-dialog';
 import {
   useDeleteProduct,
   useProducts,
@@ -36,6 +37,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [viewerFor, setViewerFor] = useState<Product | null>(null);
 
   const { data, isLoading } = useProducts({ page, limit: 10, search });
   const del = useDeleteProduct();
@@ -142,6 +144,14 @@ export default function ProductsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label="3D / 360 viewer settings"
+                      onClick={() => setViewerFor(p)}
+                    >
+                      <Rotate3d className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => openEdit(p)}
                     >
                       <Pencil className="h-4 w-4" />
@@ -190,6 +200,14 @@ export default function ProductsPage() {
         onOpenChange={setDialogOpen}
         product={editing}
       />
+
+      {viewerFor && (
+        <ViewerConfigDialog
+          productId={viewerFor.id}
+          productName={viewerFor.name}
+          onClose={() => setViewerFor(null)}
+        />
+      )}
     </div>
   );
 }

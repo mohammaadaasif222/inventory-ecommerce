@@ -12,8 +12,11 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { ShipmentTracker } from '@/components/storefront/shipment-tracker';
 import { useAuthStore } from '@/store/auth-store';
 import { useGuestOrder, useMyOrder } from '@/hooks/use-account';
+import { useOrderShipments } from '@/hooks/use-shipping';
 import { recallGuestToken, rememberGuestToken } from '@/lib/guest-order';
 
 const TIMELINE = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
@@ -49,6 +52,9 @@ export default function OrderTrackingPage() {
   const mine = useMyOrder(id, Boolean(user));
   const guest = useGuestOrder(id, user ? null : guestToken);
   const { data: order, isLoading, isError } = user ? mine : guest;
+  // Shipment-level tracking is scoped to the order's owner; guests keep the
+  // order-status timeline and can use /track with their tracking number.
+  const { data: shipments } = useOrderShipments(id, Boolean(user));
 
   // Signed out with no token: login is the only path to this order. Deferred a
   // tick so the credential effect gets a chance to find a stashed token first.
@@ -111,6 +117,24 @@ export default function OrderTrackingPage() {
                 );
               })}
             </ol>
+          </CardContent>
+        </Card>
+      )}
+
+      {shipments && shipments.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {shipments.length === 1 ? 'Shipment' : 'Shipments'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {shipments.map((shipment, i) => (
+              <div key={shipment.id}>
+                {i > 0 && <Separator className="mb-6" />}
+                <ShipmentTracker shipment={shipment} />
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}

@@ -9,6 +9,10 @@ import {
 } from 'typeorm';
 import { Product, ProductImage, ProductStatus } from './entities/product.entity';
 import { ProductVariant } from './entities/product-variant.entity';
+import {
+  ViewerConfig,
+  ViewerConfigJson,
+} from './entities/viewer-config.entity';
 import { Category } from '../catalog/entities/category.entity';
 import { UploadService } from '../upload/upload.service';
 import { AppException, ErrorCode } from '../common/exceptions/app.exception';
@@ -55,6 +59,8 @@ export class ProductsService {
     private readonly products: Repository<Product>,
     @InjectRepository(ProductVariant)
     private readonly variants: Repository<ProductVariant>,
+    @InjectRepository(ViewerConfig)
+    private readonly viewerConfigs: Repository<ViewerConfig>,
     private readonly uploads: UploadService,
     dataSource: DataSource,
   ) {
@@ -374,5 +380,25 @@ export class ProductsService {
       if (!existing || existing.id === ignoreId) return candidate;
       candidate = `${base}-${++n}`;
     }
+  }
+
+  // ── 3D / 360 viewer config ──
+  async getViewerConfig(productId: string): Promise<ViewerConfigJson | null> {
+    const row = await this.viewerConfigs.findOne({ where: { productId } });
+    return row?.config ?? null;
+  }
+
+  /** Upsert the product's viewer widget settings. */
+  async saveViewerConfig(
+    productId: string,
+    config: ViewerConfigJson,
+  ): Promise<ViewerConfigJson> {
+    await this.findOne(productId); // 404s on unknown products
+    const existing = await this.viewerConfigs.findOne({ where: { productId } });
+    const row = existing
+      ? Object.assign(existing, { config })
+      : this.viewerConfigs.create({ productId, config });
+    const saved = await this.viewerConfigs.save(row);
+    return saved.config;
   }
 }
